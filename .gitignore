@@ -1,0 +1,5 @@
+vim/autoload
+vim/plugged
+.DS_STORE
+vim/.netrwhist
+vim/undo-dir/
