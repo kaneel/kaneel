@@ -82,7 +82,7 @@ let g:ale_linters['typescriptreact'] = ['stylelint', 'eslint']
 let g:ale_linters['jsx'] = ['stylelint', 'eslint']
 let g:ale_linters['rust'] = ['rls']
 let g:ale_linters['reason'] = ['reason-language-server']
-let g:ale_rust_rls_executable = '/Users/kaneel/.cargo/bin/rls'
+let g:ale_rust_rls_executable = '/home/kaneel/.cargo/bin/rls'
 " let g:ale_lint_on_text_changed = 'never'
 let g:ale_javascript_prettier_use_local_config = 1
 let g:ale_javascript_eslint_executable = 'eslint_d'
@@ -235,15 +235,20 @@ set secure
 " neovim live substitution
 set inccommand=nosplit
 
-" Use OS X clipboard
-" yank to clipboard
-if has("clipboard")
-  set clipboard=unnamed " copy to the system clipboard
-
-  if has("unnamedplus") " X11 support
-    set clipboard+=unnamedplus
-  endif
-endif
+" clipboard
+set clipboard+=unnamedplus
+let g:clipboard = {
+          \   'name': 'win32yank-wsl',
+          \   'copy': {
+          \      '+': 'win32yank.exe -i --crlf',
+          \      '*': 'win32yank.exe -i --crlf',
+          \    },
+          \   'paste': {
+          \      '+': 'win32yank.exe -o --lf',
+          \      '*': 'win32yank.exe -o --lf',
+          \   },
+          \   'cache_enabled': 0,
+          \ }
 
 " Visual bell
 set visualbell
