@@ -14,8 +14,8 @@ vim.keymap.set("n", "<leader>s", ":w<CR>")
 vim.keymap.set("n", "<leader>j", ":m +1<CR>")
 vim.keymap.set("n", "<leader>k", ":m -2<CR>")
 -- , to move next or prev
-vim.keymap.set("n", "<leader>n", ":bp<CR>")
-vim.keymap.set("n", "<leader>b", ":bn<CR>")
+vim.keymap.set("n", "<leader>z", ":bp<CR>")
+vim.keymap.set("n", "<leader>x", ":bn<CR>")
 
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
