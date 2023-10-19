@@ -21,6 +21,13 @@ function makeDir {
   if [ -d $1 ]; 
   then 
     msg="[$1] already exists"
+    read -p "Do you want to delete? yN " delYN
+    case $delYN in 
+      [yY]) 
+        echo "yolo!"
+        rm -rf $2
+        break;;
+    esac
   else 
     mkdir $1
     msg="[$1] created"
@@ -30,7 +37,14 @@ function makeDir {
 
 function linkFile {
   if [ -L $2 ]; 
-  then msg="[$2] already exists"
+  then 
+    read -p "[$2] already exists; Do you want to delete? yN " delYN
+    case $delYN in 
+      [yY]) 
+        echo "yolo!"
+        rm $2
+        break;;
+    esac
   else
     msg="[$2] linked to $1"
 
