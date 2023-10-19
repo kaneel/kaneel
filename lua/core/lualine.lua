@@ -1,3 +1,13 @@
+local colors = {
+	red = "#ca1243",
+	grey = "#a0a1a7",
+	black = "#383a42",
+	white = "#f3f3f3",
+	light_green = "#83a598",
+	orange = "#fe8019",
+	green = "#8ec07c",
+}
+
 -- The LSP+copilot_active stuff is excerpt from Lunarvim
 local function get_attached_clients()
 	local buf_clients = vim.lsp.get_active_clients({ bufnr = 0 })
@@ -62,6 +72,15 @@ local spaces_component = {
 	padding = 1,
 }
 
+local function modified()
+	if vim.bo.modified then
+		return "+"
+	elseif vim.bo.modifiable == false or vim.bo.readonly == true then
+		return "-"
+	end
+	return ""
+end
+
 require("lualine").setup({
 	options = {
 		theme = "auto",
@@ -73,8 +92,21 @@ require("lualine").setup({
 	},
 
 	sections = {
-		lualine_b = { "branch" },
-		lualine_c = { "diff" },
+		lualine_b = {
+			"branch",
+			{
+				"diff",
+				colored = true, -- Displays a colored diff status if set to true
+				symbols = { added = "+", modified = "~", removed = "-" }, -- Changes the symbols used by the diff.
+				source = nil, -- A function that works as a data source for diff.
+				-- It must return a table as such:
+				--   { added = add_count, modified = modified_count, removed = removed_count }
+				-- or nil on failure. count <= 0 won't be displayed.
+			},
+		},
+		lualine_c = {
+			{ "filename", file_status = false, path = 1 },
+		},
 		lualine_x = {
 			"diagnostics",
 			attached_clients_component,

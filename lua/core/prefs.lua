@@ -3,7 +3,7 @@ vim.opt.mouse = "a"
 vim.opt.swapfile = false
 vim.opt.backup = false
 
-local undodir = os.getenv("HOME") .. "/.config/undo-dir"
+local undodir = vim.env.HOME .. "/.config/undo-dir"
 if vim.fn.isdirectory(undodir) == false then
 	vim.fn.mkdir(undodir)
 end

@@ -3,8 +3,6 @@ source $ZPLUG_HOME/init.zsh
 
 zplug "zsh-users/zsh-autosuggestions"
 zplug "zsh-users/zsh-completions"
-zplug "bhilburn/powerlevel9k", use:powerlevel9k.zsh-theme
-zplug "iam4x/zsh-iterm-touchbar"
 zplug "mafredri/zsh-async", from:github
 zplug "bobsoppe/zsh-ssh-agent", use:ssh-agent.zsh, from:github
 zplug "chriskempson/base16-shell", use:"scripts/base16-ashes.sh", defer:0

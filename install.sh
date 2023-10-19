@@ -2,6 +2,14 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+if [ ! -z $1 ] && [ -d $1 ];
+then 
+  /bin/echo $1
+  INSTALL_DIR=$1
+else 
+  INSTALL_DIR=~
+fi
+
 case "$(uname -sr)" in
    Darwin*)
      Platform="mac"
@@ -10,18 +18,19 @@ case "$(uname -sr)" in
      Platform="linux"
      ;;
    CYGWIN*|MINGW*|MINGW32*|MSYS*)
-     Platform="win"
+     /bin/echo "NO WINDOWS"
+     exit
      ;;
    *)
-     Platform=""
+     /bin/echo "ARE U FROM THE FUTURE?"
+     exit
      ;;
 esac
 
 function makeDir {
   if [ -d $1 ]; 
   then 
-    msg="[$1] already exists"
-    read -p "Do you want to delete? yN " delYN
+    read -p "[$1] already exists; Do you want to delete? yN " delYN
     case $delYN in 
       [yY]) 
         echo "yolo!"
@@ -41,60 +50,48 @@ function linkFile {
     read -p "[$2] already exists; Do you want to delete? yN " delYN
     case $delYN in 
       [yY]) 
-        echo "yolo!"
         rm $2
-        break;;
+        linkFile $1 $2
+        ;;
     esac
   else
     msg="[$2] linked to $1"
 
-    if [ $Platform = "linux" ] || [ $Platform = "mac" ];
-    then command="ln -s"
-    elif [ $Platform = "win" ];
-    then command="mklink"
-    fi
+    command="ln -s"
 
     if [ -d $SCRIPT_DIR/$1 ];
     then 
       /bin/echo -e "target [$1] is a directory!"
-      if [ $Platform = "linux" ] || [ $Platform = "mac" ];
-      then command="$command -n"
-      elif [ $Platform = "win" ];
-      then command="$command -D"
-      fi
+      command="$command -n"
     fi
 
-    if [ $Platform = "linux" ];
-    then $command $SCRIPT_DIR/$1 $2
-    elif [ $Platform = "mac" ];
-    then $command $SCRIPT_DIR/$1 $2
-    elif [ $Platform = "win" ];
-    then $command $SCRIPT_DIR/$1 $2
-    fi
+    $command $SCRIPT_DIR/$1 $2
   fi
 
   /bin/echo -e "$msg"
 }
 #
-# creates .config
-makeDir ~/.config
-makeDir ~/.config/nvim
-
 # create symlinks
-linkFile init.lua   ~/.config/nvim/init.lua
-linkFile lua        ~/.config/nvim/lua
-linkFile tmux.conf  ~/.tmux.conf
-linkFile zshrc      ~/.zshrc
-linkFile myzsh      ~/myzsh
-linkFile gitignore  ~/.gitignore
-# windows' a bit special here
-if [ $Platform = "win" ];
-then
-  # move init-win.lua to the AppData dir
-  makeDir ~/AppData/Local/nvim
-  linkFile init-win.lua   ~/AppData/Local/nvim/init.lua
+linkFile tmux.conf        $INSTALL_DIR/.tmux.conf
+linkFile zshrc            $INSTALL_DIR/.zshrc
+linkFile myzsh            $INSTALL_DIR/myzsh
+linkFile gitignore        $INSTALL_DIR/.gitignore
+linkFile starship.toml    $INSTALL_DIR/.config/starship.toml
+
+# creates .config
+makeDir $INSTALL_DIR/.config
+makeDir $INSTALL_DIR/.config/nvim
+
+linkFile init.lua   $INSTALL_DIR/.config/nvim/init.lua
+linkFile lua        $INSTALL_DIR/.config/nvim/lua
+
+if [ $Platform = "linux" ]; then 
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  curl -sS https://starship.rs/install.sh | sh
+elif [ $Platform = "mac" ]; then 
+  brew install rustup
+  curl -sS https://starship.rs/install.sh | sh
 fi
 
 # the right vim
 git config --global core.editor $(which nvim)
-

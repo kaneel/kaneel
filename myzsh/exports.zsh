@@ -2,8 +2,10 @@ export LC_ALL="en_US.UTF-8"
 
 export EDITOR="nvim"
 export VISUAL="nvim"
+
 export LDFLAGS="-L/usr/local/opt/llvm/lib"
 export CPPFLAGS="-I/usr/local/opt/llvm/include"
+
 export TERM=screen-256color
 
 BASE16_SHELL_PATH="$HOME/.config/base16-shell"
