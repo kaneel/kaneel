@@ -67,7 +67,7 @@ function linkFile {
     if [ $Platform = "linux" ];
     then $command $SCRIPT_DIR/$1 $2
     elif [ $Platform = "mac" ];
-    then $command $2 $SCRIPT_DIR/$1 
+    then $command $SCRIPT_DIR/$1 $2
     elif [ $Platform = "win" ];
     then $command $SCRIPT_DIR/$1 $2
     fi

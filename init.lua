@@ -11,11 +11,11 @@ if not vim.loop.fs_stat(lazypath) then
 		"--branch=stable", -- latest stable release
 		lazypath,
 	})
+else 
+	vim.opt.rtp:prepend(lazypath)
+	require("lazy").setup({
+		{ import = "plugins" },
+	})
+	require("core")
 end
-vim.opt.rtp:prepend(lazypath)
-require("lazy").setup({
-	{ import = "plugins" },
-})
 -- LAZY STUFF END
-
-require("core")
