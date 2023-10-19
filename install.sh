@@ -1,36 +1,85 @@
 #!/bin/bash
 
-SCRIPTDIR=~/kaneel
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-function linkFile {
-  if [ -L $2 ]; then
+case "$(uname -sr)" in
+   Darwin*)
+     Platform="mac"
+     ;;
+   Linux*)
+     Platform="linux"
+     ;;
+   CYGWIN*|MINGW*|MINGW32*|MSYS*)
+     Platform="win"
+     ;;
+   *)
+     Platform=""
+     ;;
+esac
+
+function makeDir {
+  if [ -d $1 ]; 
+  then 
     msg="[$1] already exists"
-  else
-    msg="[$1] linked to $2"
-    command="ln -s"
-    if [ -d $SCRIPTDIR/$1 ] ; then command="$command -n"; fi
-    $command $SCRIPTDIR/$1 $2
+  else 
+    mkdir $1
+    msg="[$1] created"
   fi
   /bin/echo -e "$msg"
 }
 
-function program_is_installed {
-  # set to 1 initially
-  local return_=1
-  # set to 0 if not found
-  type $1 >/dev/null 2>&1 || { local return_=0; }
-  # return value
-  echo "$return_"
-}
+function linkFile {
+  if [ -L $2 ]; 
+  then msg="[$2] already exists"
+  else
+    msg="[$2] linked to $1"
 
-linkFile vimrc     ~/.vimrc
-linkFile vimrc     ~/.nvimrc
-linkFile vim       ~/.vim
-linkFile tmux.conf ~/.tmux.conf
-linkFile zshrc     ~/.zshrc
-linkFile myzsh     ~/myzsh
-linkFile gitignore ~/.gitignore
-linkFile gitconfig ~/.gitconfig
+    if [ $Platform = "linux" ] || [ $Platform = "mac" ];
+    then command="ln -s"
+    elif [ $Platform = "win" ];
+    then command="mklink"
+    fi
+
+    if [ -d $SCRIPT_DIR/$1 ];
+    then 
+      /bin/echo -e "target [$1] is a directory!"
+      if [ $Platform = "linux" ] || [ $Platform = "mac" ];
+      then command="$command -n"
+      elif [ $Platform = "win" ];
+      then command="$command -D"
+      fi
+    fi
+
+    if [ $Platform = "linux" ];
+    then $command $SCRIPT_DIR/$1 $2
+    elif [ $Platform = "mac" ];
+    then $command $2 $SCRIPT_DIR/$1 
+    elif [ $Platform = "win" ];
+    then $command $SCRIPT_DIR/$1 $2
+    fi
+  fi
+
+  /bin/echo -e "$msg"
+}
+#
+# creates .config
+makeDir ~/.config
+makeDir ~/.config/nvim
+
+# create symlinks
+linkFile init.lua   ~/.config/nvim/init.lua
+linkFile lua        ~/.config/nvim/lua
+linkFile tmux.conf  ~/.tmux.conf
+linkFile zshrc      ~/.zshrc
+linkFile myzsh      ~/myzsh
+linkFile gitignore  ~/.gitignore
+# windows' a bit special here
+if [ $Platform = "win" ];
+then
+  # move init-win.lua to the AppData dir
+  makeDir ~/AppData/Local/nvim
+  linkFile init-win.lua   ~/AppData/Local/nvim/init.lua
+fi
 
 # the right vim
 git config --global core.editor $(which nvim)
