@@ -1,86 +1,97 @@
 #!/bin/bash
 
-SCRIPTDIR=~/dotfiles
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-function linkFile {
-  if [ -L $2 ]; then
-    msg="[$1] already exists"
-  else
-    msg="[$1] linked to $2"
-    command="ln -s"
-    if [ -d $SCRIPTDIR/$1 ] ; then command="$command -n"; fi
-    $command $SCRIPTDIR/$1 $2
+if [ ! -z $1 ] && [ -d $1 ];
+then 
+  /bin/echo $1
+  INSTALL_DIR=$1
+else 
+  INSTALL_DIR=~
+fi
+
+case "$(uname -sr)" in
+   Darwin*)
+     Platform="mac"
+     ;;
+   Linux*)
+     Platform="linux"
+     ;;
+   CYGWIN*|MINGW*|MINGW32*|MSYS*)
+     /bin/echo "NO WINDOWS"
+     exit
+     ;;
+   *)
+     /bin/echo "ARE U FROM THE FUTURE?"
+     exit
+     ;;
+esac
+
+function makeDir {
+  if [ -d $1 ]; 
+  then 
+    read -p "[$1] already exists; Do you want to delete? yN " delYN
+    case $delYN in 
+      [yY]) 
+        echo "yolo!"
+        rm -rf $2
+        break;;
+    esac
+  else 
+    mkdir $1
+    msg="[$1] created"
   fi
   /bin/echo -e "$msg"
 }
 
-function doSSH {
-  ssh-keygen -t rsa -b 4096 -C "$1"
-  eval "$(ssh-agent -s)"
-  ssh-add -K ~/.ssh/id_rsa
+function linkFile {
+  if [ -L $2 ]; 
+  then 
+    read -p "[$2] already exists; Do you want to delete? yN " delYN
+    case $delYN in 
+      [yY]) 
+        rm $2
+        linkFile $1 $2
+        ;;
+    esac
+  else
+    msg="[$2] linked to $1"
+
+    command="ln -s"
+
+    if [ -d $SCRIPT_DIR/$1 ];
+    then 
+      /bin/echo -e "target [$1] is a directory!"
+      command="$command -n"
+    fi
+
+    $command $SCRIPT_DIR/$1 $2
+  fi
+
+  /bin/echo -e "$msg"
 }
+#
+# create symlinks
+linkFile tmux.conf        $INSTALL_DIR/.tmux.conf
+linkFile zshrc            $INSTALL_DIR/.zshrc
+linkFile myzsh            $INSTALL_DIR/myzsh
+linkFile gitignore        $INSTALL_DIR/.gitignore
+linkFile starship.toml    $INSTALL_DIR/.config/starship.toml
 
-function program_is_installed {
-  # set to 1 initially
-  local return_=1
-  # set to 0 if not found
-  type $1 >/dev/null 2>&1 || { local return_=0; }
-  # return value
-  echo "$return_"
-}
+# creates .config
+makeDir $INSTALL_DIR/.config
+makeDir $INSTALL_DIR/.config/nvim
 
-# Asking the real questions
-echo "mac username plz"
-read username
-echo "fullname plz"
-read fullname
-echo "email address plz"
-read emailaddr
-read -n1 -p "Create SSH key? [y,n]" ssh
-case "$ssh" in
-  [yY] )
-    doSSH "$emailaddr"
-    ;;
-    * )
-  echo "okay…"
-  ;;
-esac
+linkFile init.lua   $INSTALL_DIR/.config/nvim/init.lua
+linkFile lua        $INSTALL_DIR/.config/nvim/lua
 
-linkFile vimrc     ~/.vimrc
-linkFile vimrc     ~/.nvimrc
-linkFile vim       ~/.vim
-linkFile tmux.conf ~/.tmux.conf
-linkFile zshrc     ~/.zshrc
-linkFile myzsh     ~/myzsh
-linkFile gitignore ~/.gitignore
-linkFile gitconfig ~/.gitconfig
-
-# BREW
-if [ program_is_installed == 0 ]; then
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-else
-  brew update
-  brew upgrade
+if [ $Platform = "linux" ]; then 
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  curl -sS https://starship.rs/install.sh | sh
+elif [ $Platform = "mac" ]; then 
+  brew install rustup
+  curl -sS https://starship.rs/install.sh | sh
 fi
 
-brew cask install iTerm2 sourcetree
-brew install ack zsh zsh-completions ag zplug tmux reattach-to-user-namespace wget yarn
-brew install vim --with-override-system-vi --with-client-server 
-brew install neovim
-
-# lel
-brew install fortune cowsay
-sudo gem install lolcat
-
-# Plug for vim
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
 # the right vim
-git config --global core.editor $(which vim)
-# the right git username and email addy
-git config --global user.name "$fullname"
-git config --global user.email "$emailaddr"
-
-# install shell integration for iterm2
-curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utilities.sh | bash
+git config --global core.editor $(which nvim)
