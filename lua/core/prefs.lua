@@ -31,7 +31,7 @@ vim.opt.termguicolors = true
 vim.opt.colorcolumn = "80"
 
 vim.opt.visualbell = true
-vim.opt.pastetoggle = "<F2>"
+-- vim.opt.pastetoggle = "<F2>"
 vim.opt.signcolumn = "yes:1"
 
 vim.opt.number = true
@@ -50,7 +50,7 @@ vim.opt.secure = true
 -- live search / replace
 vim.opt.inccommand = "nosplit"
 
-vim.opt.guifont = { "Sauce Code Nerd Font", ":h12" }
+vim.opt.guifont = { "SauceCodePro Nerd Font", ":h12" }
 
 -- python3 host prog lookup
 local function system(command)
@@ -62,3 +62,10 @@ end
 if vim.fn.executable("python3") > 0 then
 	vim.g.python3_host_prog = system("which python3")
 end
+
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	pattern = "*.njk,*.webc",
+	callback = function()
+		vim.bo.filetype = "html"
+	end,
+})
