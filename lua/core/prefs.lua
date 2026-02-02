@@ -31,7 +31,6 @@ vim.opt.termguicolors = true
 vim.opt.colorcolumn = "80"
 
 vim.opt.visualbell = true
--- vim.opt.pastetoggle = "<F2>"
 vim.opt.signcolumn = "yes:1"
 
 vim.opt.number = true
