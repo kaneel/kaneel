@@ -89,10 +89,12 @@ linkFile lua              $INSTALL_DIR/.config/nvim/lua
 if [ $Platform = "linux" ]; then 
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   curl -sS https://starship.rs/install.sh | sh
+  curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
 elif [ $Platform = "mac" ]; then 
   # install homebrew
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   brew install rustup ripgrep zsh zplug starship neovim
+  brew install --cask kitty
 fi
 
 git clone https://github.com/chriskempson/base16-shell.git ~/.config/base16-shell
