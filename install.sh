@@ -89,8 +89,9 @@ if [ $Platform = "linux" ]; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   curl -sS https://starship.rs/install.sh | sh
 elif [ $Platform = "mac" ]; then 
-  brew install rustup
-  curl -sS https://starship.rs/install.sh | sh
+  # install homebrew
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  brew install rustup fg ripgrep zsh zplug starship neovim
 fi
 
 # the right vim

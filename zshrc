@@ -4,3 +4,7 @@ test -e $HOME/myzsh/exports.zsh && source $HOME/myzsh/exports.zsh
 test -e $HOME/myzsh/functions.zsh && source $HOME/myzsh/functions.zsh
 test -e $HOME/myzsh/init.zsh && source $HOME/myzsh/init.zsh
 test -e $HOME/myzsh/theme.zsh && source $HOME/myzsh/theme.zsh
+test -e $HOME/myzsh/autosrc.zsh && source $HOME/myzsh/autosrc.zsh
+
+# bun completions
+[ -s "/Users/kaneel/.bun/_bun" ] && source "/Users/kaneel/.bun/_bun"
