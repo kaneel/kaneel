@@ -1,31 +1,98 @@
 local lsp = require("lsp-zero").preset({})
 local cmp = require("cmp")
+local ms = require("vim.lsp.protocol").Methods
+
+-- tsserver often sends hover as |plaintext|; Neovim then skips TS treesitter (grey mush).
+-- Fence as markdown only for real hovers (focus_id), never for diagnostic floats.
+do
+	local util = vim.lsp.util
+	local open = util.open_floating_preview
+
+	--- Maps buffer filetype → ``` fence lang for markdown code-block injection.
+	local fence_lang = {
+		typescript = "typescript",
+		typescriptreact = "tsx",
+		javascript = "javascript",
+		javascriptreact = "tsx",
+		rust = "rust",
+		lua = "lua",
+		python = "python",
+		go = "go",
+		c = "c",
+		cpp = "cpp",
+	}
+
+	function util.open_floating_preview(contents, syntax, opts)
+		opts = opts or {}
+		if opts.focus_id == ms.textDocument_hover and syntax == "plaintext" then
+			local lang = fence_lang[vim.bo[vim.api.nvim_get_current_buf()].filetype]
+			if lang then
+				syntax = "markdown"
+				local lines = { "```" .. lang }
+				vim.list_extend(lines, contents)
+				lines[#lines + 1] = "```"
+				contents = lines
+			end
+		end
+		return open(contents, syntax, opts)
+	end
+end
 
 lsp.preset("recommended")
+
+--- Constrain hover size; wrap_at aligns wrapping with width (fewer stray one-word lines).
+local function lsp_hover()
+	local max_w = math.min(88, math.max(40, vim.o.columns - 16))
+	vim.lsp.buf.hover({
+		border = "rounded",
+		max_width = max_w,
+		wrap_at = max_w,
+		max_height = math.floor(vim.o.lines * 0.45),
+	})
+end
+
+-- Softer line breaks inside ephemeral markdown floats (docs / code blocks).
+vim.api.nvim_create_autocmd("BufWinEnter", {
+	callback = function(ev)
+		if vim.bo[ev.buf].filetype == "markdown" and vim.bo[ev.buf].buftype == "nofile" then
+			vim.wo.linebreak = true
+		end
+	end,
+})
 
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(event)
 		local opts = { buffer = event.buf }
+		local builtin = require("telescope.builtin")
 
-		vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", opts)
-		vim.keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<cr>", opts)
+		vim.keymap.set("n", "K", lsp_hover, opts)
+		vim.keymap.set("n", "gd", function()
+			builtin.lsp_definitions({})
+		end, opts)
 		vim.keymap.set("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<cr>", opts)
-		vim.keymap.set("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<cr>", opts)
-		vim.keymap.set("n", "go", "<cmd>lua vim.lsp.buf.type_definition()<cr>", opts)
-		vim.keymap.set("n", "gr", "<cmd>lua vim.lsp.buf.references()<cr>", opts)
+		vim.keymap.set("n", "gi", function()
+			builtin.lsp_implementations({})
+		end, opts)
+		vim.keymap.set("n", "go", function()
+			builtin.lsp_type_definitions({})
+		end, opts)
+		vim.keymap.set("n", "gr", function()
+			builtin.lsp_references({})
+		end, opts)
 		vim.keymap.set("n", "gs", "<cmd>lua vim.lsp.buf.signature_help()<cr>", opts)
 		vim.keymap.set("n", "<F2>", "<cmd>lua vim.lsp.buf.rename()<cr>", opts)
 		vim.keymap.set({ "n", "x" }, "<F3>", "<cmd>lua vim.lsp.buf.format({async = true})<cr>", opts)
 
 		vim.keymap.set("n", "<leader>vws", "<cmd>lua vim.lsp.buf.workspace_symbol()<cr>", opts)
 		vim.keymap.set("n", "<leader>vca", "<cmd>lua vim.lsp.buf.code_action()<cr>", opts)
-		vim.keymap.set("n", "<leader>vrr", "<cmd>lua vim.lsp.buf.references()<cr>", opts)
+		vim.keymap.set("n", "<leader>vrr", function()
+			builtin.lsp_references({})
+		end, opts)
 		vim.keymap.set("n", "<leader>vrn", "<cmd>lua vim.lsp.buf.rename()<cr>", opts)
-		vim.keymap.set("n", "<leader>vd", "<cmd>lua vim.diagnostic.open_float()<cr>", opts)
 	end,
 })
 
-local cmp_select = { behaviour = cmp.SelectBehavior.Select }
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 local cmp_format = lsp.cmp_format()
 
 cmp.setup({
@@ -43,3 +110,16 @@ cmp.setup({
 })
 
 lsp.setup()
+
+vim.diagnostic.config({
+	virtual_text = false,
+	underline = false,
+	signs = true,
+	float = { border = "rounded" },
+})
+
+local function diagnostic_line_float()
+	vim.diagnostic.open_float({ scope = "line", focus = true })
+end
+vim.keymap.set("n", "gl", diagnostic_line_float, { desc = "Diagnostic float (current line)" })
+vim.keymap.set("n", "<leader>vd", diagnostic_line_float, { desc = "Diagnostic float (current line)" })

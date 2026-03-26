@@ -1,8 +1,25 @@
 local vim = vim
 local lsp_zero = require("lsp-zero")
-local lspconfig = vim.lsp.config
 
 require("mason").setup()
+
+-- CLI tools for conform.nvim / nvim-lint (install if missing)
+vim.defer_fn(function()
+	local ok, mr = pcall(require, "mason-registry")
+	if not ok or not mr or not mr.get_package then
+		return
+	end
+	for _, name in ipairs({
+		"stylua",
+		"stylelint",
+		"clang-format",
+	}) do
+		local pkg_ok, pkg = pcall(mr.get_package, name)
+		if pkg_ok and pkg and not pkg:is_installed() then
+			pkg:install()
+		end
+	end
+end, 1500)
 require("mason-nvim-dap").setup({
 	handlers = {
 		function(config)
@@ -12,54 +29,59 @@ require("mason-nvim-dap").setup({
 			require("mason-nvim-dap").default_setup(config)
 		end,
 		codelldb = function(config)
-			config.adapters.lldb = {
-				type = "executable",
-				command = "C:\\Program Files\\LLVM\\bin\\lldb-vscode.exe", -- adjust as needed, must be absolute path
-				name = "lldb",
-			}
-			config.configurations.cpp = {
-				{
-					name = "Launch",
-					type = "lldb",
-					request = "launch",
-					program = function()
-						return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
-					end,
-					cwd = "${workspaceFolder}",
-					args = {},
-				},
-			}
-			config.configurations.zig = config.configurations.cpp
-			config.configurations.c = config.configurations.cpp
-
+			if vim.fn.has("win32") == 1 then
+				config.adapters.lldb = {
+					type = "executable",
+					command = "C:\\Program Files\\LLVM\\bin\\lldb-vscode.exe",
+					name = "lldb",
+				}
+				config.configurations.cpp = {
+					{
+						name = "Launch",
+						type = "lldb",
+						request = "launch",
+						program = function()
+							return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+						end,
+						cwd = "${workspaceFolder}",
+						args = {},
+					},
+				}
+				config.configurations.zig = config.configurations.cpp
+				config.configurations.c = config.configurations.cpp
+			end
 			require("mason-nvim-dap").default_setup(config)
 		end,
 	},
 })
 require("mason-lspconfig").setup({
+	-- rust_analyzer is owned by rustaceanvim, not mason-lspconfig auto-enable
+	automatic_enable = {
+		exclude = { "rust_analyzer" },
+	},
 	handlers = {
 		lsp_zero.default_setup,
 		clangd = function()
-			lspconfig.clangd.setup({
-				cmd = { "clangd", "--header-insertion=never" },
-				filetypes = { "cc", "c", "cpp", "cxx", "objc", "objcpp" },
+			require("lspconfig").clangd.setup({
+				cmd = {
+					"clangd",
+					"--header-insertion=never",
+				},
+				filetypes = { "c", "cpp", "cc", "cxx", "objc", "objcpp" },
 			})
 		end,
 		lua_ls = function()
-			lspconfig.lua_ls.setup({
+			require("lspconfig").lua_ls.setup({
 				settings = {
 					Lua = {
 						diagnostics = {
 							globals = { "vim", "use", "require" },
-							workspace = {
-								-- Get the language server to recognize the 'vim', 'use' global
-								-- Make the server aware of Neovim runtime files
-								library = vim.api.nvim_get_runtime_file("", true),
-							},
-							telemetry = {
-								-- Do not send telemetry data containing a randomized but unique identifier
-								enable = false,
-							},
+						},
+						workspace = {
+							library = vim.api.nvim_get_runtime_file("", true),
+						},
+						telemetry = {
+							enable = false,
 						},
 					},
 				},

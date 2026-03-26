@@ -1,3 +1,6 @@
+-- LSP hover uses Treesitter markdown only when |g:syntax_on| is set (see :help open_floating_preview).
+vim.cmd.syntax("on")
+
 vim.opt.mouse = "a"
 
 vim.opt.swapfile = false

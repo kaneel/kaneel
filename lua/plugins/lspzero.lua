@@ -25,20 +25,11 @@ return {
 		{ "hrsh7th/cmp-nvim-lsp" },
 		{ "L3MON4D3/LuaSnip" },
 
-		-- Formatter
+		-- Rust (rust-analyzer); do not use rust-tools — deprecated lspconfig path
 		{
-			"jay-babu/mason-null-ls.nvim",
-			event = { "BufReadPre", "BufNewFile" },
-			dependencies = {
-				"williamboman/mason.nvim",
-				"nvimtools/none-ls.nvim",
-			},
-		},
-
-		-- Specialised
-		{
-			"simrat39/rust-tools.nvim",
-			ft = "rust",
+			"mrcjkb/rustaceanvim",
+			version = "^6",
+			ft = { "rust" },
 			dependencies = {
 				"williamboman/mason.nvim",
 				"neovim/nvim-lspconfig",

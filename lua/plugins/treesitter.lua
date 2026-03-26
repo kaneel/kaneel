@@ -4,8 +4,7 @@ return {
 		require("nvim-treesitter.install").update({ with_sync = true })
 	end,
 	config = function()
-		require("nvim-treesitter.configs").setup({
-			additional_vim_regex_highlighting = true,
+		require("nvim-treesitter.config").setup({
 			auto_install = true,
 			sync_install = true,
 			highlight = { enable = true, additional_vim_regex_highlighting = true },

@@ -1,45 +1,15 @@
-local colors = {
-	red = "#ca1243",
-	grey = "#a0a1a7",
-	black = "#383a42",
-	white = "#f3f3f3",
-	light_green = "#83a598",
-	orange = "#fe8019",
-	green = "#8ec07c",
-}
-
 -- The LSP+copilot_active stuff is excerpt from Lunarvim
 local function get_attached_clients()
-	local buf_clients = vim.lsp.get_active_clients({ bufnr = 0 })
+	local buf_clients = vim.lsp.get_clients({ bufnr = 0 })
 	if #buf_clients == 0 then
 		return "LSP Inactive"
 	end
 
-	local buf_ft = vim.bo.filetype
 	local buf_client_names = {}
 
-	-- add client
 	for _, client in pairs(buf_clients) do
-		-- Ignore copilot and the actuall null-ls LSP names
-		if client.name ~= "copilot" and client.name ~= "null-ls" then
+		if client.name ~= "copilot" then
 			table.insert(buf_client_names, client.name)
-		end
-	end
-
-	-- Generally, you should use either null-ls or nvim-lint + formatter.nvim, not both.
-	-- Add sources (from null-ls)
-	-- null-ls registers each source as a separate attached client, so we need to filter for unique names down below.
-	local null_ls_s, null_ls = pcall(require, "null-ls")
-	if null_ls_s then
-		local sources = null_ls.get_sources()
-		for _, source in ipairs(sources) do
-			if source._validated then
-				for ft_name, ft_active in pairs(source.filetypes) do
-					if ft_name == buf_ft and ft_active then
-						table.insert(buf_client_names, source.name)
-					end
-				end
-			end
 		end
 	end
 
@@ -66,20 +36,11 @@ local attached_clients_component = {
 
 local spaces_component = {
 	function()
-		local shiftwidth = vim.api.nvim_buf_get_option(0, "shiftwidth")
+		local shiftwidth = vim.api.nvim_get_option_value("shiftwidth", { buf = 0 })
 		return "󰌒 " .. shiftwidth
 	end,
 	padding = 1,
 }
-
-local function modified()
-	if vim.bo.modified then
-		return "+"
-	elseif vim.bo.modifiable == false or vim.bo.readonly == true then
-		return "-"
-	end
-	return ""
-end
 
 require("lualine").setup({
 	options = {
