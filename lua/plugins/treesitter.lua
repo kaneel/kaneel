@@ -1,12 +1,10 @@
 return {
 	"nvim-treesitter/nvim-treesitter",
-	build = function()
-		require("nvim-treesitter.install").update({ with_sync = true })
-	end,
+	build = ":TSUpdate",
 	config = function()
 		require("nvim-treesitter.config").setup({
 			auto_install = true,
-			sync_install = true,
+			sync_install = false,
 			highlight = { enable = true, additional_vim_regex_highlighting = true },
 			indent = { enable = true },
 			ensure_installed = {

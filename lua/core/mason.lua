@@ -61,6 +61,30 @@ require("mason-lspconfig").setup({
 	},
 	handlers = {
 		lsp_zero.default_setup,
+		-- typescript-language-server (not vtsls): explicit inlay hints + completions; keeps mason binary.
+		ts_ls = function()
+			local inlay = {
+				includeInlayParameterNameHints = "all",
+				includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+				includeInlayFunctionParameterTypeHints = true,
+				includeInlayVariableTypeHints = true,
+				includeInlayPropertyDeclarationTypeHints = true,
+				includeInlayFunctionLikeReturnTypeHints = true,
+				includeInlayEnumMemberValueHints = true,
+			}
+			require("lspconfig").ts_ls.setup(lsp_zero.build_options("ts_ls", {
+				settings = {
+					typescript = {
+						inlayHints = inlay,
+						suggest = { completeFunctionCalls = true },
+					},
+					javascript = {
+						inlayHints = inlay,
+						suggest = { completeFunctionCalls = true },
+					},
+				},
+			}))
+		end,
 		clangd = function()
 			require("lspconfig").clangd.setup({
 				cmd = {

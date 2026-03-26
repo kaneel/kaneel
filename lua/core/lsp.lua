@@ -2,18 +2,21 @@ local lsp = require("lsp-zero").preset({})
 local cmp = require("cmp")
 local ms = require("vim.lsp.protocol").Methods
 
--- tsserver often sends hover as |plaintext|; Neovim then skips TS treesitter (grey mush).
--- Fence as markdown only for real hovers (focus_id), never for diagnostic floats.
+-- Plaintext LSP hovers skip Treesitter injection; see |vim.lsp.util.open_floating_preview()|
+-- (do_stylize) and |vim.lsp.buf.hover()|. We only patch when opts.focus_id is textDocument/hover
+-- so |vim.diagnostic.open_float()| (plaintext + its own focus_id) stays unchanged.
 do
 	local util = vim.lsp.util
 	local open = util.open_floating_preview
 
-	--- Maps buffer filetype → ``` fence lang for markdown code-block injection.
+	--- Maps buffer filetype → markdown fenced-block language for TS highlighter injection.
 	local fence_lang = {
 		typescript = "typescript",
 		typescriptreact = "tsx",
 		javascript = "javascript",
 		javascriptreact = "tsx",
+		vue = "vue",
+		svelte = "svelte",
 		rust = "rust",
 		lua = "lua",
 		python = "python",
