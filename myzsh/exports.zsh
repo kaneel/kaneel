@@ -16,7 +16,9 @@ BASE16_SHELL_PATH="$HOME/.config/base16-shell"
 # export LDFLAGS="-L/opt/homebrew/opt/libffi/lib"
 # export CPPFLAGS="-I/opt/homebrew/opt/libffi/include"
 # export PKG_CONFIG_PATH="/opt/homebrew/opt/libffi/lib/pkgconfig"
-#
+
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 
 export PYENV_ROOT="$HOME/.pyenv"
 
@@ -30,5 +32,5 @@ export BUN_INSTALL="$HOME/.bun"
 export NINJA_STATUS='[%r processes, %f/%t @ %c/s (%o): %es] '
 export GO_PATH="$HOME/code"
 export GOROOT=""
-export O_PATH=$PATH:/Library/PostgreSQL/16/bin:$BUN_INSTALL/bin:$GO_PATH/bin:/Users/kaneel/.lmstudio/bin:i
+export O_PATH=$HOME/.local/bin:$PATH:/Library/PostgreSQL/16/bin:$BUN_INSTALL/bin:$GO_PATH/bin:/Users/kaneel/.lmstudio/bin:/opt/homebrew/opt/llvm/bin:i
 export PATH=$O_PATH
