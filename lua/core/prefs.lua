@@ -2,6 +2,9 @@
 vim.cmd.syntax("on")
 
 vim.opt.mouse = "a"
+vim.opt.clipboard = "unnamedplus"
+vim.opt.confirm = true
+vim.opt.jumpoptions:append("view")
 
 vim.opt.swapfile = false
 vim.opt.backup = false
@@ -69,5 +72,11 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 	pattern = "*.njk,*.webc",
 	callback = function()
 		vim.bo.filetype = "html"
+	end,
+})
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+	callback = function()
+		vim.highlight.on_yank({ higroup = "IncSearch", timeout = 80 })
 	end,
 })
